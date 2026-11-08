@@ -2,6 +2,12 @@
 
 A complete, original 3D hydraulic demolition arcade for touchscreens and browsers. Six structures across old-town, dockside and night yards, articulated hydraulic machinery and a seated human operator, structural cascades, bouncing rubble, salvage, 18 best-only stars and three earned machine paints.
 
+## November 8 interaction polish
+
+The selected cell now locks for each jaw stroke: dragging during closure aims the next stroke instead of redirecting the current hit. Contact arrives at 0.30 seconds and a repeated cycle takes 0.72 seconds. Short taps finish one accepted bite; one additional tap can queue during reopening instead of disappearing. Pointer cancellation discards an unstruck stroke. Leaving the page discards the uncommitted animation so a restored visit cannot silently resume a pending strike without its new host session. Late SDK support discovery no longer inserts a moving reward panel under a pending Resume click; optional interaction prompts live in the garage, and confirmed rewards enable paint buttons in place.
+
+Live golden collapse previews are calculated with the same structural rules as the actual strike and never mutate progress. Steel warns that it needs two bites. Target outlines, a button-cycle bar, material-specific glass fragments/metal sparks, throttled rubble landing sounds and per-job best chain records make each bite readable. The title camera now shows the machine above the phone cover; wider structures use a wider portrait framing. Scenery and original six jobs/medal targets remain intact. The old save key/schema envelope is retained; best medals, paint, social claims and exact old block checkpoints migrate in place. Missing chain records start at zero, except the active checkpoint's known largest chain is retained.
+
 ## Play
 
 Open `index.html` or `standalone.html` directly. Both contain the renderer, code and styles and work without a server, CDN, SDK, account or network. Drag on the 3D view to aim; hold to bite. The Support button selects a low bearing member. On keyboard use arrows and Space. Cut low supports for whole-column or girder cascades. No countdown, purchases or real prizes. Every bite and completed shift saves. Pause stops simulation and sound; reload resumes at the last committed bite, never a held touch.

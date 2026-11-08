@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {JOBS,makeRun,liveCells,blueprint,bite,progress,defaultProfile,cleanProfile,mergeProfile,armJoint} from './core.mjs';
+import {JOBS,makeRun,liveCells,blueprint,bite,lockBite,strikeBite,forecast,progress,defaultProfile,cleanProfile,mergeProfile,armJoint} from './core.mjs';
 import {bridge} from './sdk.mjs';
 let checks=0;const ok=(condition,message)=>{assert(condition,message);checks++;};
 for(let job=0;job<6;job++)for(const style of ['supports','roof']){
   let run=makeRun(job),finishes=0,prior=0;
   for(let n=0;n<450&&!run.finished;n++){
     const cells=liveCells(run),c=[...cells].sort((a,b)=>style==='supports'?a.y-b.y||a.x-b.x:b.y-a.y||a.x-b.x)[0];
+    const before=JSON.stringify(run),prediction=forecast(run,c.x,c.y);ok(JSON.stringify(run)===before,'Preview is read-only');
     const events=bite(run,c.x,c.y);finishes+=events.filter(e=>e.type==='finish').length;
+    assert.deepEqual(prediction.blocks.map(c=>c.id).sort(),events.flatMap(e=>e.blocks||[]).map(c=>c.id).sort());checks++;
     ok(run.removed.length>=prior,'Demolition never resurrects blocks');prior=run.removed.length;
     const restored=cleanProfile({...defaultProfile(),run}).run;
     assert.deepEqual(restored,run);checks++;
@@ -19,11 +21,18 @@ for(let job=0;job<6;job++)for(const style of ['supports','roof']){
 }
 const r=makeRun(0);ok(!bite(r,100,100).length&&!r.started,'Empty space is not a real action');
 const first=bite(r,0,0);ok(first[0].blocks.length>2,'Column collapses after removing its load path');
+const lockedRun=makeRun(0),command=lockBite(lockedRun,0,0),movedAim={x:6,y:5};
+const lockedEvents=strikeBite(lockedRun,command);ok(lockedEvents[0].cell.x===0&&lockedEvents[0].cell.y===0,'Moving the aim after commitment cannot redirect an active jaw');
+ok(!strikeBite(lockedRun,command).length&&lockedRun.bites===1,'A held-cycle command cannot strike twice');
+ok(!strikeBite(makeRun(1),lockBite(makeRun(0),0,0)).length,'A stale command cannot enter a new job');
 assert.deepEqual(cleanProfile({...defaultProfile(),run:r}).run,r);checks++;
 ok(cleanProfile({run:{...r,removed:['foreign']}}).run===null,'Reject foreign cell ids');
 ok(cleanProfile({run:{...r,removed:[...r.removed,r.removed[0]]}}).run===null,'Reject duplicate cells');
 ok(cleanProfile({paint:2}).paint===0,'Unearned paint not selected');
 const saved=cleanProfile({...defaultProfile(),run:r}),merged=mergeProfile(saved,{best:[3,2],run:makeRun(2),rewards:{comment:true}});
+ok(saved.chains[0]===r.largest,'Record derives from an existing checkpoint');
+const legacy={...saved};delete legacy.chains;const migrated=cleanProfile(legacy);ok(migrated.run.removed.length===r.removed.length&&migrated.chains[0]===r.largest,'Pre-optimization checkpoint and medals preserved');
+const chainMerge=mergeProfile(saved,{chains:[3,44],best:[1,2]});ok(chainMerge.chains[0]===r.largest&&chainMerge.chains[1]===44,'Cloud records merge monotonically');
 ok(merged.run.job===0&&merged.run.removed.length===r.removed.length,'Cloud merge keeps live checkpoint');ok(merged.best[0]===3&&merged.rewards.comment,'Cloud merge retains earned results');
 const steel=makeRun(3),cell=blueprint(3).find(c=>c.kind==='steel');bite(steel,cell.x,cell.y);ok(steel.damaged.length===2,'Steel takes two bites');assert.deepEqual(cleanProfile({run:steel}).run,steel);checks++;
 for(let x=-3;x<=3;x+=.3)for(let y=.3;y<=6.15;y+=.3){const base=[-2.7,1.48,3.9],target=[x,y+.45,.9],s=armJoint(base,target),distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));ok(Math.abs(distance(base,s.elbow)-4.3)<1e-8,'Upper arm rigid');ok(Math.abs(distance(s.elbow,s.end)-4.0)<1e-8,'Forearm rigid');ok(distance(target,s.end)<1e-8,'Jaw reaches whole interaction plane');}

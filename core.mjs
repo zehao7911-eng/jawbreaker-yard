@@ -42,6 +42,18 @@ export function targetAt(r,x,y){
   for(const c of cells){let dd=(c.x-x)**2+(c.y-y)**2;if(dd<d-.0001||Math.abs(dd-d)<.0001&&c.z>(best?.z??-1)){best=c;d=dd;}}
   return d<2.2?best:null;
 }
+export function lockBite(run,x,y){const cell=targetAt(run,x,y);return !run.finished&&cell?{job:run.job,cell:{...cell},used:false}:null;}
+export function strikeBite(run,command){
+  if(!command||command.used||command.job!==run.job||run.finished)return[];
+  command.used=true;
+  return liveCells(run).some(c=>c.id===command.cell.id)?bite(run,command.cell.x,command.cell.y):[];
+}
+export function forecast(run,x,y){
+  const command=lockBite(run,x,y);if(!command)return{cell:null,blocks:[],count:0,armoured:false};
+  const copy={...run,removed:[...run.removed],damaged:[...run.damaged]};
+  const events=strikeBite(copy,command),blocks=events.flatMap(e=>e.blocks||[]);
+  return{cell:command.cell,blocks,count:blocks.length,armoured:events[0]?.armoured===true};
+}
 export function bite(r,x,y){
   if(r.finished)return[];
   const c=targetAt(r,x,y);if(!c)return[];
@@ -77,11 +89,12 @@ export function bite(r,x,y){
   }
   return events;
 }
-export function defaultProfile(){return{best:Array(6).fill(0),selected:0,paint:0,sound:true,light:false,gentle:false,rewards:{like:false,comment:false},run:null};}
+export function defaultProfile(){return{best:Array(6).fill(0),chains:Array(6).fill(0),selected:0,paint:0,sound:true,light:false,gentle:false,rewards:{like:false,comment:false},run:null};}
 export const totalStars=p=>p.best.reduce((a,b)=>a+b,0);
 export function cleanProfile(raw){
   const p=defaultProfile();if(!raw||typeof raw!=='object')return p;
   if(Array.isArray(raw.best))p.best=p.best.map((_,i)=>Number.isInteger(raw.best[i])?clamp(raw.best[i],0,3):0);
+  if(Array.isArray(raw.chains))p.chains=p.chains.map((_,i)=>Number.isInteger(raw.chains[i])?clamp(raw.chains[i],0,blueprint(i).length):0);
   p.selected=Number.isInteger(raw.selected)?clamp(raw.selected,0,5):0;
   p.paint=Number.isInteger(raw.paint)?clamp(raw.paint,0,2):0;
   p.sound=raw.sound!==false;p.light=raw.light===true;p.gentle=raw.gentle===true;
@@ -97,6 +110,7 @@ export function cleanProfile(raw){
           largest:Number.isInteger(r.largest)?clamp(r.largest,0,bp.length):0,finished:done,
           stars:done?1+(r.bites<=JOBS[r.job].par+4?1:0)+(r.bites<=JOBS[r.job].par?1:0):0,started:r.started};
         if(done)p.best[r.job]=Math.max(p.best[r.job],p.run.stars);
+        p.chains[r.job]=Math.max(p.chains[r.job],p.run.largest);
       }
     }
   }
@@ -104,4 +118,4 @@ export function cleanProfile(raw){
   if(p.paint===2&&totalStars(p)<12&&!p.rewards.comment)p.paint=0;
   return p;
 }
-export function mergeProfile(local,remote){const q=cleanProfile(remote);return cleanProfile({...local,best:local.best.map((v,i)=>Math.max(v,q.best[i])),run:local.run||q.run,rewards:{like:local.rewards.like||q.rewards.like,comment:local.rewards.comment||q.rewards.comment}});}
+export function mergeProfile(local,remote){const p=cleanProfile(local),q=cleanProfile(remote);return cleanProfile({...p,best:p.best.map((v,i)=>Math.max(v,q.best[i])),chains:p.chains.map((v,i)=>Math.max(v,q.chains[i])),run:p.run||q.run,rewards:{like:p.rewards.like||q.rewards.like,comment:p.rewards.comment||q.rewards.comment}});}
