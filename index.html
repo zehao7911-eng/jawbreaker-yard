@@ -444,7 +444,7 @@ function focusSupport(){const ground=liveCells(run).filter(c=>c.y===0).sort((a,b
 $('panel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;audio.wake();const action=b.dataset.action;
   if(b.dataset.job!==undefined){play(+b.dataset.job);focusSupport();return;}
   if(b.dataset.paint!==undefined){profile.paint=+b.dataset.paint;view.settings(profile);store();garage();return;}
-  if(action==='play'){play();focusSupport();}else if(action==='resume'||action==='back'){if(run.finished)result();else if(run.started||session)play();else home();}
+  if(action==='play'){play();focusSupport();}else if(action==='resume'){play();}else if(action==='back'){if(run.finished)result();else if(run.started||session)play();else home();}
   else if(action==='home')home();else if(action==='jobs')jobs();else if(action==='garage')garage();
   else if(action==='next'){if(run.job===5)jobs();else{play(run.job+1);focusSupport();}}
   else if(action==='retry'){play(run.job);focusSupport();}
