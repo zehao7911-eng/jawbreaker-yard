@@ -1,0 +1,7 @@
+export function makeAudio(){let ctx=null,enabled=true;const voices=new Set();
+  function wake(){if(!ctx)try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch{}if(ctx?.state==='suspended')ctx.resume().catch(()=>{});}
+  function tone(f,d=.15,type='sine',gain=.08,slide=0,delay=0){if(!enabled||!ctx||ctx.state!=='running')return;const o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+delay;o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+d);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.008);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+d+.02);voices.add(o);o.onended=()=>{voices.delete(o);o.disconnect();g.disconnect();};}
+  function play(kind,n=0){wake();if(kind==='bite'){tone(120,.17,'triangle',.13,-85);tone(540,.07,'square',.026,-330,.025);if(n>4){tone(64,.4,'triangle',.13,-25,.05);for(let i=0;i<4;i++)tone(170+Math.random()*70,.1,'triangle',.03,-90,.08+i*.045);}}if(kind==='start')tone(280,.2,'sine',.04,100);if(kind==='bolt'){for(let i=0;i<3;i++)tone(660+i*130,.20,'sine',.04,0,i*.055);}if(kind==='finish'){for(let i=0;i<5;i++)tone([392,494,587,784,988][i],.30,'triangle',.055,0,i*.11);}}
+  function stop(){for(let o of voices)try{o.stop();}catch{}voices.clear();}
+  return{wake,play,stop,set(v){enabled=v;if(!v)stop();}};
+}

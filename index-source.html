@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#263f46"><meta property="og:title" content="Jawbreaker Yard"><meta property="og:image" content="cover.jpg"><meta name="description" content="Aim a hydraulic jaw. Bite out the supports. Bring the whole block down."><title>Jawbreaker Yard · 3D Demolition</title><link rel="icon" href="icon.svg"><link rel="stylesheet" href="style.css"></head>
+<body><div id="game"><canvas id="world" aria-label="3D demolition yard. Drag to aim the hydraulic jaws and hold to bite." tabindex="0"></canvas>
+<header><a id="brand" href="#" aria-label="Jawbreaker Yard home"><span class="brand-icon">J<span>Y</span></span><span>JAWBREAKER<small>DEMOLITION CO.</small></span></a><button id="pause" aria-label="Pause game">Ⅱ</button></header>
+<section id="hud" hidden><div><small id="job-tag"></small><h2 id="job-title"></h2></div><div class="progress-label"><strong id="percent">0<span>%</span></strong><div><b id="bites">0 BITES</b><small id="par"></small></div></div><div class="track"><i id="progress"></i></div><div id="bolts" aria-label="Recovered salvage bolts">○ ○ ○</div></section>
+<output id="pop" aria-live="polite"></output>
+<section id="controls" hidden><div class="tip" id="tip">Bite low. Watch it go.</div><div class="control-row"><button id="support" aria-label="Aim at a low support">⌖<small>SUPPORT</small></button><button id="crunch"><span class="teeth">▾ ▾ ▾</span><strong>HOLD TO BITE</strong><span class="teeth bottom">▴ ▴ ▴</span></button></div><p>Drag anywhere to aim · Hold to crunch</p></section>
+<main id="panel"></main><div id="error" hidden><h1>3D needs WebGL</h1><p>Enable hardware acceleration or try a modern browser.</p><button onclick="location.reload()">Try again</button></div>
+</div><script src="vendor/three.min.js"></script><script type="module" src="app.mjs"></script></body></html>
+
